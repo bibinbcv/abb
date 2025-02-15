@@ -1,0 +1,42 @@
+trigger:
+  branches:
+    include:
+      - main   # Triggers on commits to the 'main' branch.
+
+pool:
+  vmImage: 'ubuntu-latest'   # Using a Microsoft-hosted agent with Ubuntu OS.
+
+variables:
+  nodeVersion: '16.x'   # Specify the Node.js version to use.
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndTest
+        steps:
+          # Checkout the code from the repository
+          - task: Checkout@1
+
+          # Set up Node.js
+          - task: UseNode@2
+            inputs:
+              versionSpec: $(nodeVersion)   # Use the defined Node.js version
+              addToPath: true
+
+          # Install dependencies
+          - script: |
+              npm install
+            displayName: 'Install Dependencies'
+
+          # Run unit tests (assuming you're using Jest or Mocha)
+          - script: |
+              npm test
+            displayName: 'Run Unit Tests'
+
+          # Publish build artifacts (e.g., node_modules or dist)
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: 'drop'
+              publishLocation: 'Container'
+
+  # Optionally, you can add other stages like 'Deploy' here.
